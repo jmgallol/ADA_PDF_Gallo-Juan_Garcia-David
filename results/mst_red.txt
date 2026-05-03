@@ -1,0 +1,44 @@
+=== Actividad 1: Construcción del grafo ===
+Número de nodos: 20
+Número de aristas: 190
+Costo promedio de arista: 129.042
+
+=== Actividad 2: MST por Kruskal ===
+Peso total del MST: 2393
+Lista de aristas incluidas en el MST:
+(11, 17) con costo 124
+(13, 17) con costo 124
+(0, 17) con costo 125
+(2, 17) con costo 125
+(7, 17) con costo 125
+(14, 17) con costo 125
+(17, 19) con costo 125
+(1, 17) con costo 126
+(3, 17) con costo 126
+(6, 17) con costo 126
+(9, 17) con costo 126
+(10, 17) con costo 126
+(15, 17) con costo 126
+(5, 17) con costo 127
+(8, 17) con costo 127
+(12, 17) con costo 127
+(16, 17) con costo 127
+(17, 18) con costo 127
+(4, 17) con costo 129
+
+=== Actividad 4: Verificación (subgrafo primeros 5 nodos) ===
+Aristas del subgrafo de nodos 0 a 4 ordenadas por costo:
+(0, 2)=128, (0, 3)=128, (0, 1)=129, (1, 2)=129, (1, 3)=129,
+(2, 3)=129, (0, 4)=132, (2, 4)=132, (3, 4)=132, (1, 4)=133.
+
+Ejecución manual de Kruskal:
+1. (0, 2) - Costo 128 -> Se incluye.
+2. (0, 3) - Costo 128 -> Se incluye.
+3. (0, 1) - Costo 129 -> Se incluye.
+4. (1, 2) - Costo 129 -> Forma ciclo 0-1-2-0 (se descarta).
+5. (1, 3) - Costo 129 -> Forma ciclo 0-1-3-0 (se descarta).
+6. (2, 3) - Costo 129 -> Forma ciclo 0-2-3-0 (se descarta).
+7. (0, 4) - Costo 132 -> Se incluye.
+Peso total subgrafo: 128 + 128 + 129 + 132 = 517.
+Esta traza manual coincide exactamente con el comportamiento lógico que el código C++ 
+implementa a través de la ordenación y la estructura Union-Find.

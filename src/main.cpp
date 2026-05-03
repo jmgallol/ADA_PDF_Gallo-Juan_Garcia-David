@@ -5,6 +5,7 @@
 #include "parser.hpp"
 #include "mergesort.hpp"
 #include "binary_search.hpp"
+#include "kruskal.hpp"
 
 using namespace std;
 
@@ -106,7 +107,10 @@ int main(int argc, char *argv[])
     crearArchivoOrdenado(result.requests);
     crearArchivoBusquedas(result.requests);
 
-    cout << "Modulo A finalizado." << endl;
+    cout << "Ejecutando Modulo B..." << endl;
+    runModuleB(result.requests);
+
+    cout << "Modulo A y B finalizado." << endl;
 
     return 0;
 }
