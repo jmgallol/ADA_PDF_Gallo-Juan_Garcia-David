@@ -1,0 +1,5 @@
+Q_A01 k=72 customerID=5248-YGIJN tenure=72
+Q_A02 k=60 customerID=5248-YGIJN tenure=72
+Q_A03 k=45 customerID=5248-YGIJN tenure=72
+Q_A04 k=30 customerID=5248-YGIJN tenure=72
+Q_A05 k=12 customerID=5248-YGIJN tenure=72
