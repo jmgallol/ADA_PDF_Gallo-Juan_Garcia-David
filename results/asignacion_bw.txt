@@ -1,0 +1,56 @@
+=== Modulo C: Asignacion de Ancho de Banda (Mochila 0-1) ===
+
+=== Actividad 1: Mochila 0-1 por tabulacion ===
+Capacidad W: 500
+Numero de solicitudes activas: 50
+Dimensiones tabla DP: (51) x (501)
+
+Valor optimo total: 0
+Numero de solicitudes seleccionadas: 0
+Ancho de banda utilizado: 0 / 500
+
+CustomerIDs incluidos en la solucion optima:
+
+=== Actividad 2: Fallo del enfoque codicioso ===
+Se construye un contraejemplo usando exactamente 3 solicitudes:
+
+Tabla comparativa:
+Enfoque                            | Solicitudes seleccionadas | Valor total | ¿Optimo?
+--------------------------------------------------------------------------------------
+Codicioso (ratio v/w)              | [No se encontró contraejemplo en datos] | - | -
+PD (Mochila 0-1)                   | [No se encontró contraejemplo en datos] | - | -
+
+Nota: En los datos disponibles, el algoritmo codicioso por ratio tiende a
+producir soluciones similares a PD. Para un contraejemplo clásico, considere:
+Items: A(w=60, v=100, r=1.67), B(w=60, v=100, r=1.67), C(w=50, v=90, r=1.80)
+Cap=100: Codicioso toma C(90), PD toma A+B=100(pero no caben)=A sólo(100).
+
+Explicacion: El algoritmo codicioso selecciona items por ratio value/weight descendente,
+pero esta estrategia no garantiza el optimo en Mochila 0-1. La programacion dinamica
+encuentra la combinacion exacta que maximiza el valor dentro de la capacidad.
+
+=== Actividad 3: Reconstruccion de la solucion (Backtracking) ===
+La solucion optima se recupera mediante backtracking sobre la tabla DP:
+Se comienza en dp[50][500] = 0
+Se retrocede comprobando si cada item fue incluido.
+Items recuperados (en orden): 
+
+=== Actividad 4: Analisis de complejidad ===
+Complejidad de tiempo: O(n * W) = O(50 * 500)
+  Llenado de tabla DP: n * W operaciones elementales
+  Backtracking: O(n)
+  Complejidad total: Theta(n * W)
+
+Complejidad de espacio: O(n * W) = O(50 * 500)
+  Tabla DP: (n+1) x (W+1) celdas
+  Espacio auxiliar: O(n) para backtracking
+  Complejidad total: Theta(n * W)
+
+Pseudopolinomialidad:
+  Este algoritmo es PSEUDOPOLINOMIAL, no polinomial estricto.
+  Razon: W no es el tamano de entrada (que es log W), sino su VALOR.
+  Si W crece exponencialmente con los datos de entrada, la complejidad
+  se vuelve exponencial. El algoritmo es polinomial solo si W esta acotado
+  por un polinomio en log(max_valor).
+
+Tiempo de ejecucion del Modulo C: 0.5768 ms

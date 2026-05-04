@@ -6,6 +6,7 @@
 #include "mergesort.hpp"
 #include "binary_search.hpp"
 #include "kruskal.hpp"
+#include "knapsack.hpp"
 
 using namespace std;
 
@@ -110,7 +111,10 @@ int main(int argc, char *argv[])
     cout << "Ejecutando Modulo B..." << endl;
     runModuleB(result.requests);
 
-    cout << "Modulo A y B finalizado." << endl;
+    cout << "Ejecutando Modulo C..." << endl;
+    runModuleC(result.requests);
+
+    cout << "Todos los modulos finalizados." << endl;
 
     return 0;
 }
