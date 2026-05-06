@@ -1,56 +1,76 @@
-=== Modulo C: Asignacion de Ancho de Banda (Mochila 0-1) ===
+===============================================
+MODULO C: ASIGNACION DE ANCHO DE BANDA
+===============================================
 
-=== Actividad 1: Mochila 0-1 por tabulacion ===
-Capacidad W: 500
-Numero de solicitudes activas: 50
-Dimensiones tabla DP: (51) x (501)
+ACTIVIDAD 1: MOCHILA 0-1 POR TABULACION
+---------------------------------------
 
-Valor optimo total: 0
-Numero de solicitudes seleccionadas: 0
-Ancho de banda utilizado: 0 / 500
+Parametros:
+  Capacidad (W): 500 unidades
+  Numero de solicitudes activas (n): 50
+  Dimensiones tabla DP: (51) x (501)
 
-CustomerIDs incluidos en la solucion optima:
+Solucion optima:
+  Valor optimo total: 0 centavos
+  Numero de solicitudes: 0
+  Ancho de banda utilizado: 0 / 500
 
-=== Actividad 2: Fallo del enfoque codicioso ===
-Se construye un contraejemplo usando exactamente 3 solicitudes:
+IDs de cliente seleccionados:
 
-Tabla comparativa:
-Enfoque                            | Solicitudes seleccionadas | Valor total | ¿Optimo?
---------------------------------------------------------------------------------------
-Codicioso (ratio v/w)              | [No se encontró contraejemplo en datos] | - | -
-PD (Mochila 0-1)                   | [No se encontró contraejemplo en datos] | - | -
 
-Nota: En los datos disponibles, el algoritmo codicioso por ratio tiende a
-producir soluciones similares a PD. Para un contraejemplo clásico, considere:
-Items: A(w=60, v=100, r=1.67), B(w=60, v=100, r=1.67), C(w=50, v=90, r=1.80)
-Cap=100: Codicioso toma C(90), PD toma A+B=100(pero no caben)=A sólo(100).
+ACTIVIDAD 2: FALLO DEL ENFOQUE CODICIOSO
+-----------------------------------------
 
-Explicacion: El algoritmo codicioso selecciona items por ratio value/weight descendente,
-pero esta estrategia no garantiza el optimo en Mochila 0-1. La programacion dinamica
-encuentra la combinacion exacta que maximiza el valor dentro de la capacidad.
+Contraejemplo con 3 solicitudes:
 
-=== Actividad 3: Reconstruccion de la solucion (Backtracking) ===
-La solucion optima se recupera mediante backtracking sobre la tabla DP:
-Se comienza en dp[50][500] = 0
-Se retrocede comprobando si cada item fue incluido.
-Items recuperados (en orden): 
+Elementos considerados:
+  Elemento 1: 5248-YGIJN (peso=6369, valor=903, ratio=0.14)
+  Elemento 2: 6234-RAAPL (peso=7252, valor=999, ratio=0.14)
+  Elemento 3: 5954-BDFSG (peso=7854, valor=1075, ratio=0.14)
 
-=== Actividad 4: Analisis de complejidad ===
-Complejidad de tiempo: O(n * W) = O(50 * 500)
-  Llenado de tabla DP: n * W operaciones elementales
-  Backtracking: O(n)
-  Complejidad total: Theta(n * W)
+TABLA COMPARATIVA:
+Enfoque        | Solicitudes | Valor | Optimo?
+---------------------------------------------------
+Codicioso      | (ninguna) | 0 | Si
+DP (Mochila)   | (ninguna) | 0 | Si
 
-Complejidad de espacio: O(n * W) = O(50 * 500)
-  Tabla DP: (n+1) x (W+1) celdas
-  Espacio auxiliar: O(n) para backtracking
-  Complejidad total: Theta(n * W)
+Nota: Con estos 3 elementos, ambos enfoques dan el mismo resultado.
+Para un contraejemplo clásico teórico:
+  A(w=60, v=100, r~1.67), B(w=60, v=100, r~1.67), C(w=50, v=90, r=1.8)
+  Cap=100: Codicioso->C(90), DP->mejor opcion
 
-Pseudopolinomialidad:
-  Este algoritmo es PSEUDOPOLINOMIAL, no polinomial estricto.
-  Razon: W no es el tamano de entrada (que es log W), sino su VALOR.
-  Si W crece exponencialmente con los datos de entrada, la complejidad
-  se vuelve exponencial. El algoritmo es polinomial solo si W esta acotado
-  por un polinomio en log(max_valor).
 
-Tiempo de ejecucion del Modulo C: 0.5768 ms
+ACTIVIDAD 3: RECONSTRUCCION DE LA SOLUCION (BACKTRACKING)
+--------------------------------------------------------
+
+Algoritmo: Comienza en dp[50][500] = 0
+Retrocede verificando si cada elemento fue incluido en la solucion.
+Recupera los indices en orden:
+
+
+
+ACTIVIDAD 4: ANALISIS DE COMPLEJIDAD
+------------------------------------
+
+COMPLEJIDAD DE TIEMPO: O(n*W)
+  - Construccion tabla DP: n*W operaciones
+  - Backtracking: O(n)
+  - Total: O(50*500) = O(25000)
+
+COMPLEJIDAD DE ESPACIO: O(n*W)
+  - Tabla DP: (n+1)*(W+1) celdas = 25551 celdas
+  - Espacio auxiliar: O(n)
+  - Total: O(25000)
+
+PSEUDOPOLINOMIALIDAD:
+  Este algoritmo es PSEUDOPOLINOMIAL (no polinomial estricto).
+  Razon: W es el VALOR de capacidad, no su tamano en bits.
+  - Si W esta acotado por polinomio(entrada): Polinomial
+  - Si W crece exponencialmente: Tiempo exponencial real
+  - Ejemplo: W = 2^(numero de solicitudes) -> exponencial
+
+CONCLUSION: O(n*W) es pseudopolinomial. Para NP-hard, es muy eficiente.
+
+
+Tiempo de ejecucion: 0.848 ms
+===============================================

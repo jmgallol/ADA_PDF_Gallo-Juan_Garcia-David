@@ -4,16 +4,20 @@
 #include <vector>
 #include "request.hpp"
 
-struct Edge {
+struct Arista
+{
     int u, v;
-    int cost;
-    bool operator<(const Edge& other) const {
-        if (cost != other.cost) return cost < other.cost;
-        if (u != other.u) return u < other.u;
-        return v < other.v;
+    int costo;
+    bool operator<(const Arista &otro) const
+    {
+        if (costo != otro.costo)
+            return costo < otro.costo;
+        if (u != otro.u)
+            return u < otro.u;
+        return v < otro.v;
     }
 };
 
-void runModuleB(const std::vector<Request>& requests);
+void ejecutarModuloB(const std::vector<Solicitud> &solicitudes);
 
 #endif

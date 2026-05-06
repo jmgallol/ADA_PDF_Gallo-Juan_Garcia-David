@@ -4,6 +4,6 @@
 #include <vector>
 #include "request.hpp"
 
-int recursiveBinarySearchFirstTenureGreaterEqual(const std::vector<Request> &requests, int k);
+int buscarPorAntigüedad(const std::vector<Solicitud> &solicitudes, int k);
 
 #endif

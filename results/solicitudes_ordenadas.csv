@@ -1,4 +1,4 @@
-customerID,tenure,MonthlyCharges,TotalCharges,Churn
+idCliente,antigedad,cargosMenuales,cargosTotales,rotacion
 5248-YGIJN,72,90.25,6369.45,No
 6234-RAAPL,72,99.9,7251.7,No
 5954-BDFSG,72,107.5,7853.7,No

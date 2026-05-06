@@ -4,6 +4,6 @@
 #include <vector>
 #include "request.hpp"
 
-void mergeSortByTenureDesc(std::vector<Request> &requests);
+void fusionacionPorAntigüedadDesc(std::vector<Solicitud> &solicitudes);
 
 #endif

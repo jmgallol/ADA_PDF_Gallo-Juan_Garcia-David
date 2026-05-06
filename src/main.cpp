@@ -10,37 +10,37 @@
 
 using namespace std;
 
-void crearArchivoOrdenado(const vector<Request> &requests)
+void crearArchivoOrdenado(const vector<Solicitud> &solicitudes)
 {
-    ofstream file("results/solicitudes_ordenadas.csv");
+    ofstream archivo("results/solicitudes_ordenadas.csv");
 
-    if (!file.is_open())
+    if (!archivo.is_open())
     {
         cout << "Error: no se pudo crear results/solicitudes_ordenadas.csv" << endl;
         return;
     }
 
-    file << "customerID,tenure,MonthlyCharges,TotalCharges,Churn\n";
+    archivo << "idCliente,antigedad,cargosMenuales,cargosTotales,rotacion\n";
 
-    for (const Request &r : requests)
+    for (const Solicitud &s : solicitudes)
     {
-        file << r.customerID << ","
-             << r.tenure << ","
-             << r.monthlyCharges << ","
-             << r.totalCharges << ","
-             << r.churn << "\n";
+        archivo << s.idCliente << ","
+                << s.antigüedad << ","
+                << s.cargosMenuales << ","
+                << s.cargosTotales << ","
+                << s.rotacion << "\n";
     }
 
-    file.close();
+    archivo.close();
 
     cout << "Archivo creado: results/solicitudes_ordenadas.csv" << endl;
 }
 
-void crearArchivoBusquedas(const vector<Request> &requests)
+void crearArchivoBusquedas(const vector<Solicitud> &solicitudes)
 {
-    ofstream file("results/busquedas_A.txt");
+    ofstream archivo("results/busquedas_A.txt");
 
-    if (!file.is_open())
+    if (!archivo.is_open())
     {
         cout << "Error: no se pudo crear results/busquedas_A.txt" << endl;
         return;
@@ -51,22 +51,22 @@ void crearArchivoBusquedas(const vector<Request> &requests)
 
     for (int i = 0; i < 5; i++)
     {
-        int posicion = recursiveBinarySearchFirstTenureGreaterEqual(requests, consultas[i]);
+        int posicion = buscarPorAntigüedad(solicitudes, consultas[i]);
 
-        file << nombres[i] << " k=" << consultas[i] << " ";
+        archivo << nombres[i] << " k=" << consultas[i] << " ";
 
         if (posicion != -1)
         {
-            file << "customerID=" << requests[posicion].customerID
-                 << " tenure=" << requests[posicion].tenure << "\n";
+            archivo << "idCliente=" << solicitudes[posicion].idCliente
+                    << " antigedad=" << solicitudes[posicion].antigüedad << "\n";
         }
         else
         {
-            file << "No encontrado\n";
+            archivo << "No encontrado\n";
         }
     }
 
-    file.close();
+    archivo.close();
 
     cout << "Archivo creado: results/busquedas_A.txt" << endl;
 }
@@ -83,16 +83,16 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    string csvPath = argv[1];
+    string rutaCSV = argv[1];
 
-    cout << "Leyendo archivo: " << csvPath << endl;
+    cout << "Leyendo archivo: " << rutaCSV << endl;
 
-    ParseResult result = readCSV(csvPath);
+    ResultadoAnalisis resultado = leerCSV(rutaCSV);
 
-    cout << "Registros cargados: " << result.requests.size() << endl;
-    cout << "TotalCharges nulos: " << result.nullTotalCharges << endl;
+    cout << "Registros cargados: " << resultado.solicitudes.size() << endl;
+    cout << "CargosTotales nulos: " << resultado.cargosTotalesNulos << endl;
 
-    if (result.requests.empty())
+    if (resultado.solicitudes.empty())
     {
         cout << "Error: no se cargo ningun registro. Revisa la ruta o el parser." << endl;
         return 1;
@@ -100,19 +100,19 @@ int main(int argc, char *argv[])
 
     cout << "Ordenando solicitudes con MergeSort..." << endl;
 
-    mergeSortByTenureDesc(result.requests);
+    fusionacionPorAntigüedadDesc(resultado.solicitudes);
 
     cout << "Primer registro ordenado:" << endl;
-    cout << result.requests[0].customerID << " tenure=" << result.requests[0].tenure << endl;
+    cout << resultado.solicitudes[0].idCliente << " antigedad=" << resultado.solicitudes[0].antigüedad << endl;
 
-    crearArchivoOrdenado(result.requests);
-    crearArchivoBusquedas(result.requests);
+    crearArchivoOrdenado(resultado.solicitudes);
+    crearArchivoBusquedas(resultado.solicitudes);
 
     cout << "Ejecutando Modulo B..." << endl;
-    runModuleB(result.requests);
+    ejecutarModuloB(resultado.solicitudes);
 
     cout << "Ejecutando Modulo C..." << endl;
-    runModuleC(result.requests);
+    ejecutarModuloC(resultado.solicitudes);
 
     cout << "Todos los modulos finalizados." << endl;
 

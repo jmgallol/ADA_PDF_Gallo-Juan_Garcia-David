@@ -1,37 +1,37 @@
 #include "mergesort.hpp"
 
-static void merge(std::vector<Request> &arr, int left, int mid, int right)
+static void fusionar(std::vector<Solicitud> &arr, int izquierda, int medio, int derecha)
 {
-    int n1 = mid - left + 1;
-    int n2 = right - mid;
+    int n1 = medio - izquierda + 1;
+    int n2 = derecha - medio;
 
-    std::vector<Request> leftArray(n1);
-    std::vector<Request> rightArray(n2);
+    std::vector<Solicitud> arrayIzquierdo(n1);
+    std::vector<Solicitud> arrayDerecho(n2);
 
     for (int i = 0; i < n1; i++)
     {
-        leftArray[i] = arr[left + i];
+        arrayIzquierdo[i] = arr[izquierda + i];
     }
 
     for (int j = 0; j < n2; j++)
     {
-        rightArray[j] = arr[mid + 1 + j];
+        arrayDerecho[j] = arr[medio + 1 + j];
     }
 
     int i = 0;
     int j = 0;
-    int k = left;
+    int k = izquierda;
 
     while (i < n1 && j < n2)
     {
-        if (leftArray[i].tenure >= rightArray[j].tenure)
+        if (arrayIzquierdo[i].antigüedad >= arrayDerecho[j].antigüedad)
         {
-            arr[k] = leftArray[i];
+            arr[k] = arrayIzquierdo[i];
             i++;
         }
         else
         {
-            arr[k] = rightArray[j];
+            arr[k] = arrayDerecho[j];
             j++;
         }
 
@@ -40,40 +40,40 @@ static void merge(std::vector<Request> &arr, int left, int mid, int right)
 
     while (i < n1)
     {
-        arr[k] = leftArray[i];
+        arr[k] = arrayIzquierdo[i];
         i++;
         k++;
     }
 
     while (j < n2)
     {
-        arr[k] = rightArray[j];
+        arr[k] = arrayDerecho[j];
         j++;
         k++;
     }
 }
 
-static void mergeSortRecursive(std::vector<Request> &arr, int left, int right)
+static void fusionacionRecursiva(std::vector<Solicitud> &arr, int izquierda, int derecha)
 {
-    if (left >= right)
+    if (izquierda >= derecha)
     {
         return;
     }
 
-    int mid = left + (right - left) / 2;
+    int medio = izquierda + (derecha - izquierda) / 2;
 
-    mergeSortRecursive(arr, left, mid);
-    mergeSortRecursive(arr, mid + 1, right);
+    fusionacionRecursiva(arr, izquierda, medio);
+    fusionacionRecursiva(arr, medio + 1, derecha);
 
-    merge(arr, left, mid, right);
+    fusionar(arr, izquierda, medio, derecha);
 }
 
-void mergeSortByTenureDesc(std::vector<Request> &requests)
+void fusionacionPorAntigüedadDesc(std::vector<Solicitud> &solicitudes)
 {
-    if (requests.empty())
+    if (solicitudes.empty())
     {
         return;
     }
 
-    mergeSortRecursive(requests, 0, requests.size() - 1);
+    fusionacionRecursiva(solicitudes, 0, solicitudes.size() - 1);
 }

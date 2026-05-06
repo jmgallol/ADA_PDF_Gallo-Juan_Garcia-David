@@ -5,385 +5,340 @@
 #include <cmath>
 #include <algorithm>
 #include <chrono>
-#include <set>
 #include <iomanip>
 
 using namespace std;
 
-struct KnapsackItem
+// Representa un elemento para el problema de mochila
+struct ElementoMochila
 {
-    int index; // índice original en la lista de solicitudes
-    string customerID;
-    int weight;   // TotalCharges redondeado
-    int value;    // MonthlyCharges * 10 redondeado
-    double ratio; // v/w para enfoque codicioso
+    int indice; // índice en el arreglo original
+    string idCliente;
+    int peso;     // TotalCharges redondeado (ancho de banda)
+    int valor;    // MonthlyCharges * 10 redondeado (ingreso)
+    double razon; // valor/peso (para codicioso)
 };
 
 // Extrae las 50 primeras solicitudes activas (Churn = "No")
-vector<KnapsackItem> extractActiveRequests(const vector<Request> &sortedRequests)
+vector<ElementoMochila> extraerSolicitudesActivas(const vector<Solicitud> &solicitudesOrdenadas)
 {
-    vector<KnapsackItem> activeRequests;
+    vector<ElementoMochila> activas;
 
-    for (size_t i = 0; i < sortedRequests.size() && activeRequests.size() < 50; i++)
+    for (size_t i = 0; i < solicitudesOrdenadas.size() && activas.size() < 50; i++)
     {
-        if (sortedRequests[i].churn == "No")
+        if (solicitudesOrdenadas[i].rotacion == "No")
         {
-            KnapsackItem item;
-            item.index = i;
-            item.customerID = sortedRequests[i].customerID;
-            item.weight = (int)round(sortedRequests[i].totalCharges);         // TotalCharges redondeado (unidades de ancho de banda)
-            item.value = (int)round(sortedRequests[i].monthlyCharges * 10.0); // MonthlyCharges * 10 (ingreso en centavos)
-            item.ratio = (item.weight > 0) ? (double)item.value / item.weight : 0.0;
-            activeRequests.push_back(item);
+            ElementoMochila elem;
+            elem.indice = i;
+            elem.idCliente = solicitudesOrdenadas[i].idCliente;
+            elem.peso = (int)round(solicitudesOrdenadas[i].cargosTotales);
+            elem.valor = (int)round(solicitudesOrdenadas[i].cargosMenuales * 10.0);
+            elem.razon = (elem.peso > 0) ? (double)elem.valor / elem.peso : 0.0;
+            activas.push_back(elem);
         }
     }
 
-    return activeRequests;
+    return activas;
 }
 
-// Implementa Mochila 0-1 por tabulación
-void solveKnapsack(const vector<KnapsackItem> &items, int W,
-                   vector<vector<int>> &dp,
-                   vector<int> &selectedIndices,
-                   int &optimalValue)
+// Resuelve Mochila 0-1 usando programación dinámica (tabulación)
+// Retorna: (valor óptimo, índices de elementos seleccionados, tabla DP)
+struct ResultadoMochila
 {
-    int n = items.size();
+    int valorOptimo;
+    vector<int> indicesSeleccionados;
+    int pesoUsado;
+};
 
-    // Inicializar tabla DP
-    dp.assign(n + 1, vector<int>(W + 1, 0));
+ResultadoMochila resolverMochila(const vector<ElementoMochila> &elementos, int C)
+{
+    int n = elementos.size();
+    ResultadoMochila resultado;
+    resultado.valorOptimo = 0;
+    resultado.pesoUsado = 0;
+
+    // Crear tabla DP: dp[i][w] = valor máximo con i elementos y capacidad w
+    vector<vector<int>> dp(n + 1, vector<int>(C + 1, 0));
 
     // Llenar tabla DP
     for (int i = 1; i <= n; i++)
     {
-        for (int w = 0; w <= W; w++)
+        for (int w = 0; w <= C; w++)
         {
-            // No incluir item i-1
+            // Opción 1: no tomar el elemento i-1
             dp[i][w] = dp[i - 1][w];
 
-            // Incluir item i-1 si cabe
-            if (items[i - 1].weight <= w)
+            // Opción 2: tomar el elemento i-1 (si cabe)
+            if (elementos[i - 1].peso <= w)
             {
-                int valueWithItem = dp[i - 1][w - items[i - 1].weight] + items[i - 1].value;
-                if (valueWithItem > dp[i][w])
-                {
-                    dp[i][w] = valueWithItem;
-                }
+                int valorConElemento = dp[i - 1][w - elementos[i - 1].peso] + elementos[i - 1].valor;
+                dp[i][w] = max(dp[i][w], valorConElemento);
             }
         }
     }
 
-    optimalValue = dp[n][W];
+    resultado.valorOptimo = dp[n][C];
 
-    // Backtracking para recuperar solución
-    int w = W;
+    // Backtracking: recuperar qué elementos fueron seleccionados
+    int w = C;
     for (int i = n; i > 0 && w > 0; i--)
     {
+        // Si el valor cambió, significa que este elemento fue seleccionado
         if (dp[i][w] != dp[i - 1][w])
         {
-            // Item i-1 está incluido
-            selectedIndices.push_back(i - 1);
-            w -= items[i - 1].weight;
+            resultado.indicesSeleccionados.push_back(i - 1);
+            resultado.pesoUsado += elementos[i - 1].peso;
+            w -= elementos[i - 1].peso;
         }
     }
 
     // Invertir para que quede en orden original
-    reverse(selectedIndices.begin(), selectedIndices.end());
+    reverse(resultado.indicesSeleccionados.begin(), resultado.indicesSeleccionados.end());
+
+    return resultado;
 }
 
-// Construye un contraejemplo codicioso: 3 items donde codicioso no es óptimo
-struct GreedyCounterexample
+// Busca un contraejemplo simple: 3 elementos donde codicioso ≠ óptimo
+struct Contraejemplo
 {
-    vector<int> greedyItems;
-    int greedyValue;
-    vector<int> optimalItems;
-    int optimalValue;
+    vector<int> indicesCodicioso; // índices seleccionados por codicioso
+    int valorCodicioso;
+    vector<int> indicesOptimo; // índices seleccionados por DP
+    int valorOptimo;
+    bool encontrado; // si se encontró un contraejemplo real
 };
 
-GreedyCounterexample findGreedyCounterexample(const vector<KnapsackItem> &items, int W)
+Contraejemplo encontrarContraejemplo(const vector<ElementoMochila> &elementos)
 {
-    GreedyCounterexample counter;
-    counter.greedyValue = 0;
-    counter.optimalValue = 0;
+    Contraejemplo contraejemplo;
+    contraejemplo.valorCodicioso = 0;
+    contraejemplo.valorOptimo = 0;
+    contraejemplo.encontrado = false;
 
-    // Buscar un contraejemplo: intentamos con diferentes combinaciones de 3 items
-    // donde codicioso (por ratio) sea estrictamente peor que óptimo
+    if (elementos.size() < 3)
+        return contraejemplo;
 
-    // Caso especial: construir un contraejemplo artificial que siempre demuestre el fallo
-    // Items de ejemplo:
-    // Item 1: w=60, v=100 (ratio=1.67)
-    // Item 2: w=60, v=100 (ratio=1.67)
-    // Item 3: w=50, v=90  (ratio=1.80)
-    // Capacidad: 100
-    // Codicioso: Toma Item 3 (90) y no cabe más
-    // Óptimo: Toma Items 1+2 = 200... pero no cabe
-
-    // Mejor contraejemplo real:
-    // Item A: peso=50, valor=60 (ratio=1.2)
-    // Item B: peso=50, valor=60 (ratio=1.2)
-    // Item C: peso=60, valor=90 (ratio=1.5)
-    // Capacidad=100
-    // Codicioso: toma C (90), no cabe nada más = 90
-    // Óptimo: toma A+B = 120... pero solo caben hasta 100
-    // Óptimo real: A+B no caben, C solo = 90
-
-    // Necesito buscar en los datos reales un caso donde falle
-    // Strategy: usar los primeros items encontrados para construir un mini ejemplo
-
-    if (items.size() >= 3)
+    // Tomar los 3 primeros elementos
+    vector<ElementoMochila> tres;
+    vector<int> indicesTres;
+    for (int i = 0; i < 3; i++)
     {
-        // Tomar 3 items cualesquiera
-        vector<KnapsackItem> subItems;
-        vector<int> selectedIndices;
+        tres.push_back(elementos[i]);
+        indicesTres.push_back(i);
+    }
 
-        // Intentar encontrar 3 items que formen un contraejemplo
-        // Seleccionar items con ratios altos pero pesos diversos
-        for (int i = 0; i < (int)items.size() && subItems.size() < 3; i++)
+    // Usar capacidad reducida para el ejemplo
+    int C_local = 100;
+
+    // === ENFOQUE CODICIOSO: seleccionar por ratio v/w descendente ===
+    vector<int> ordenRazon = {0, 1, 2};
+    sort(ordenRazon.begin(), ordenRazon.end(),
+         [&tres](int a, int b)
+         { return tres[a].razon > tres[b].razon; });
+
+    int pesoCodicioso = 0;
+    for (int idx : ordenRazon)
+    {
+        if (pesoCodicioso + tres[idx].peso <= C_local)
         {
-            subItems.push_back(items[i]);
-            selectedIndices.push_back(i);
-        }
-
-        if (subItems.size() == 3)
-        {
-            // Usar capacidad reducida para el ejemplo
-            int localW = min(W / 2, 150); // Usar solo parte de la capacidad
-
-            // Codicioso: seleccionar por ratio descendente hasta que no quepa
-            vector<int> ratioOrder = {0, 1, 2};
-            sort(ratioOrder.begin(), ratioOrder.end(),
-                 [&subItems](int a, int b)
-                 {
-                     return subItems[a].ratio > subItems[b].ratio;
-                 });
-
-            int greedyCapacityUsed = 0;
-            for (int idx : ratioOrder)
-            {
-                if (greedyCapacityUsed + subItems[idx].weight <= localW)
-                {
-                    counter.greedyItems.push_back(selectedIndices[idx]);
-                    counter.greedyValue += subItems[idx].value;
-                    greedyCapacityUsed += subItems[idx].weight;
-                }
-            }
-
-            // Óptimo: probar todas las 8 combinaciones
-            int maxValue = 0;
-            vector<int> bestCombination;
-
-            for (int mask = 0; mask < 8; mask++)
-            {
-                int weight = 0, value = 0;
-                vector<int> combination;
-                for (int i = 0; i < 3; i++)
-                {
-                    if (mask & (1 << i))
-                    {
-                        weight += subItems[i].weight;
-                        value += subItems[i].value;
-                        combination.push_back(selectedIndices[i]);
-                    }
-                }
-                if (weight <= localW && value > maxValue)
-                {
-                    maxValue = value;
-                    bestCombination = combination;
-                }
-            }
-
-            counter.optimalItems = bestCombination;
-            counter.optimalValue = maxValue;
-
-            // Si no encontramos contraejemplo, mostrar que el codicioso es correcto
-            if (counter.optimalValue <= counter.greedyValue)
-            {
-                // Crear un contraejemplo forzado para propósitos educativos
-                counter.optimalItems = counter.greedyItems;
-                counter.optimalValue = counter.greedyValue;
-            }
+            contraejemplo.indicesCodicioso.push_back(idx);
+            contraejemplo.valorCodicioso += tres[idx].valor;
+            pesoCodicioso += tres[idx].peso;
         }
     }
 
-    return counter;
+    // === ENFOQUE ÓPTIMO: probar todas las 8 combinaciones posibles ===
+    int mejorValor = 0;
+    int mejorMascara = 0;
+
+    for (int mascara = 0; mascara < 8; mascara++)
+    {
+        int peso = 0, valor = 0;
+        for (int i = 0; i < 3; i++)
+        {
+            if (mascara & (1 << i))
+            {
+                peso += tres[i].peso;
+                valor += tres[i].valor;
+            }
+        }
+        if (peso <= C_local && valor > mejorValor)
+        {
+            mejorValor = valor;
+            mejorMascara = mascara;
+        }
+    }
+
+    contraejemplo.valorOptimo = mejorValor;
+    for (int i = 0; i < 3; i++)
+    {
+        if (mejorMascara & (1 << i))
+            contraejemplo.indicesOptimo.push_back(i);
+    }
+
+    // Verificar si hay contraejemplo real
+    contraejemplo.encontrado = (contraejemplo.valorCodicioso < contraejemplo.valorOptimo);
+
+    return contraejemplo;
 }
 
-void runModuleC(const vector<Request> &sortedRequests)
+void ejecutarModuloC(const vector<Solicitud> &solicitudesOrdenadas)
 {
-    auto start_time = chrono::high_resolution_clock::now();
+    auto tiempoInicio = chrono::high_resolution_clock::now();
 
-    const int W = 500; // Capacidad de ancho de banda
+    const int C = 500; // Capacidad de ancho de banda
 
-    // Extraer 50 solicitudes activas
-    vector<KnapsackItem> items = extractActiveRequests(sortedRequests);
+    // === ACTIVIDAD 1: Extraer solicitudes y resolver mochila 0-1 ===
+    vector<ElementoMochila> elementos = extraerSolicitudesActivas(solicitudesOrdenadas);
 
-    cout << "\n--- Modulo C (Mochila 0-1) ---\n";
-    cout << "Solicitudes activas encontradas: " << items.size() << "\n";
+    cout << "\n=== Modulo C: Asignacion de Ancho de Banda ===\n";
+    cout << "Solicitudes activas encontradas: " << elementos.size() << "\n";
 
-    if (items.empty())
+    if (elementos.empty())
     {
         cerr << "Error: no hay solicitudes activas\n";
         return;
     }
 
-    // Resolver Mochila 0-1
-    vector<vector<int>> dp;
-    vector<int> selectedIndices;
-    int optimalValue = 0;
+    // Resolver mochila 0-1
+    ResultadoMochila resultado = resolverMochila(elementos, C);
 
-    solveKnapsack(items, W, dp, selectedIndices, optimalValue);
+    cout << "Valor optimo: " << resultado.valorOptimo << "\n";
+    cout << "Solicitudes seleccionadas: " << resultado.indicesSeleccionados.size() << "\n";
+    cout << "Ancho de banda usado: " << resultado.pesoUsado << " / " << C << "\n";
 
-    cout << "Valor optimo total: " << optimalValue << "\n";
-    cout << "Numero de solicitudes seleccionadas: " << selectedIndices.size() << "\n";
+    // === ACTIVIDAD 2: Encontrar contraejemplo ===
+    Contraejemplo contraejemplo = encontrarContraejemplo(elementos);
 
-    // Calcular peso total
-    int totalWeight = 0;
-    for (int idx : selectedIndices)
-    {
-        totalWeight += items[idx].weight;
-    }
-    cout << "Ancho de banda utilizado: " << totalWeight << " / " << W << "\n";
+    auto tiempoFin = chrono::high_resolution_clock::now();
+    chrono::duration<double, milli> duracion = tiempoFin - tiempoInicio;
 
-    // Buscar contraejemplo codicioso
-    GreedyCounterexample counter = findGreedyCounterexample(items, W);
-
-    auto end_time = chrono::high_resolution_clock::now();
-    chrono::duration<double, std::milli> elapsed = end_time - start_time;
-
-    // Escribir resultados
-    ofstream file("results/asignacion_bw.txt");
-    if (!file.is_open())
+    // === GENERAR ARCHIVO DE SALIDA ===
+    ofstream archivo("results/asignacion_bw.txt");
+    if (!archivo.is_open())
     {
         cerr << "Error: no se pudo crear results/asignacion_bw.txt\n";
         return;
     }
 
-    file << "=== Modulo C: Asignacion de Ancho de Banda (Mochila 0-1) ===\n\n";
+    archivo << "===============================================\n";
+    archivo << "MODULO C: ASIGNACION DE ANCHO DE BANDA\n";
+    archivo << "===============================================\n\n";
 
-    file << "=== Actividad 1: Mochila 0-1 por tabulacion ===\n";
-    file << "Capacidad W: " << W << "\n";
-    file << "Numero de solicitudes activas: " << items.size() << "\n";
-    file << "Dimensiones tabla DP: (" << items.size() + 1 << ") x (" << W + 1 << ")\n";
-    file << "\nValor optimo total: " << optimalValue << "\n";
-    file << "Numero de solicitudes seleccionadas: " << selectedIndices.size() << "\n";
-    file << "Ancho de banda utilizado: " << totalWeight << " / " << W << "\n";
-    file << "\nCustomerIDs incluidos en la solucion optima:\n";
+    // === ACTIVIDAD 1: Mochila 0-1 ===
+    archivo << "ACTIVIDAD 1: MOCHILA 0-1 POR TABULACION\n";
+    archivo << "---------------------------------------\n\n";
 
-    for (int idx : selectedIndices)
+    archivo << "Parametros:\n";
+    archivo << "  Capacidad (W): " << C << " unidades\n";
+    archivo << "  Numero de solicitudes activas (n): " << elementos.size() << "\n";
+    archivo << "  Dimensiones tabla DP: (" << (elementos.size() + 1) << ") x (" << (C + 1) << ")\n\n";
+
+    archivo << "Solucion optima:\n";
+    archivo << "  Valor optimo total: " << resultado.valorOptimo << " centavos\n";
+    archivo << "  Numero de solicitudes: " << resultado.indicesSeleccionados.size() << "\n";
+    archivo << "  Ancho de banda utilizado: " << resultado.pesoUsado << " / " << C << "\n\n";
+
+    archivo << "IDs de cliente seleccionados:\n";
+    for (int idx : resultado.indicesSeleccionados)
     {
-        file << "  " << items[idx].customerID
-             << " (weight=" << items[idx].weight
-             << ", value=" << items[idx].value << ")\n";
+        archivo << "  - " << elementos[idx].idCliente
+                << " (peso=" << elementos[idx].peso
+                << ", valor=" << elementos[idx].valor
+                << ", ratio=" << fixed << setprecision(2) << elementos[idx].razon << ")\n";
     }
 
-    file << "\n=== Actividad 2: Fallo del enfoque codicioso ===\n";
-    file << "Se construye un contraejemplo usando exactamente 3 solicitudes:\n\n";
-    file << "Tabla comparativa:\n";
-    file << "Enfoque                            | Solicitudes seleccionadas | Valor total | ¿Optimo?\n";
-    file << "-" << string(85, '-') << "\n";
+    // === ACTIVIDAD 2: Contraejemplo ===
+    archivo << "\n\nACTIVIDAD 2: FALLO DEL ENFOQUE CODICIOSO\n";
+    archivo << "-----------------------------------------\n\n";
 
-    if (counter.greedyValue > 0 && counter.optimalValue > 0)
+    archivo << "Contraejemplo con 3 solicitudes:\n\n";
+    archivo << "Elementos considerados:\n";
+    for (int i = 0; i < 3 && i < (int)elementos.size(); i++)
     {
-        file << "Codicioso (ratio v/w)              | ";
-        if (counter.greedyItems.size() > 0)
-        {
-            for (int i = 0; i < (int)counter.greedyItems.size(); i++)
-            {
-                if (i > 0)
-                    file << ", ";
-                file << items[counter.greedyItems[i]].customerID;
-            }
-        }
-        else
-        {
-            file << "N/A";
-        }
-        file << " | " << counter.greedyValue << " | ";
-        file << (counter.greedyValue == counter.optimalValue ? "Si" : "No") << "\n";
+        archivo << "  Elemento " << (i + 1) << ": " << elementos[i].idCliente
+                << " (peso=" << elementos[i].peso
+                << ", valor=" << elementos[i].valor
+                << ", ratio=" << fixed << setprecision(2) << elementos[i].razon << ")\n";
+    }
 
-        file << "PD (Mochila 0-1)                   | ";
-        if (counter.optimalItems.size() > 0)
-        {
-            for (int i = 0; i < (int)counter.optimalItems.size(); i++)
-            {
-                if (i > 0)
-                    file << ", ";
-                file << items[counter.optimalItems[i]].customerID;
-            }
-        }
-        else
-        {
-            file << "N/A";
-        }
-        file << " | " << counter.optimalValue << " | Si\n";
+    archivo << "\n";
+    archivo << "TABLA COMPARATIVA:\n";
+    archivo << "Enfoque        | Solicitudes | Valor | Optimo?\n";
+    archivo << "-" << string(50, '-') << "\n";
 
-        file << "\nDetalle del contraejemplo:\n";
-        file << "Items considerados (3):\n";
-        set<int> usedIndices;
-        for (int idx : counter.greedyItems)
-            usedIndices.insert(idx);
-        for (int idx : counter.optimalItems)
-            usedIndices.insert(idx);
+    archivo << "Codicioso      | ";
+    for (int idx : contraejemplo.indicesCodicioso)
+        archivo << elementos[idx].idCliente << " ";
+    if (contraejemplo.indicesCodicioso.empty())
+        archivo << "(ninguna)";
+    archivo << " | " << contraejemplo.valorCodicioso << " | ";
+    archivo << (contraejemplo.encontrado ? "No" : "Si") << "\n";
 
-        for (int idx : usedIndices)
-        {
-            if (idx < (int)items.size())
-            {
-                file << "  Item " << items[idx].customerID
-                     << ": weight=" << items[idx].weight
-                     << ", value=" << items[idx].value
-                     << ", ratio=" << fixed << setprecision(2) << items[idx].ratio << "\n";
-            }
-        }
+    archivo << "DP (Mochila)   | ";
+    for (int idx : contraejemplo.indicesOptimo)
+        archivo << elementos[idx].idCliente << " ";
+    if (contraejemplo.indicesOptimo.empty())
+        archivo << "(ninguna)";
+    archivo << " | " << contraejemplo.valorOptimo << " | Si\n";
+
+    if (contraejemplo.encontrado)
+    {
+        archivo << "\n* CONTRAEJEMPLO ENCONTRADO: Codicioso falla porque selecciona\n";
+        archivo << "  elementos con mejor ratio pero no maximiza el valor total.\n";
     }
     else
     {
-        file << "Codicioso (ratio v/w)              | [No se encontró contraejemplo en datos] | - | -\n";
-        file << "PD (Mochila 0-1)                   | [No se encontró contraejemplo en datos] | - | -\n";
-        file << "\nNota: En los datos disponibles, el algoritmo codicioso por ratio tiende a\n";
-        file << "producir soluciones similares a PD. Para un contraejemplo clásico, considere:\n";
-        file << "Items: A(w=60, v=100, r=1.67), B(w=60, v=100, r=1.67), C(w=50, v=90, r=1.80)\n";
-        file << "Cap=100: Codicioso toma C(90), PD toma A+B=100(pero no caben)=A sólo(100).\n";
+        archivo << "\nNota: Con estos 3 elementos, ambos enfoques dan el mismo resultado.\n";
+        archivo << "Para un contraejemplo clásico teórico:\n";
+        archivo << "  A(w=60, v=100, r~1.67), B(w=60, v=100, r~1.67), C(w=50, v=90, r=1.8)\n";
+        archivo << "  Cap=100: Codicioso->C(90), DP->mejor opcion\n";
     }
 
-    file << "\nExplicacion: El algoritmo codicioso selecciona items por ratio value/weight descendente,\n";
-    file << "pero esta estrategia no garantiza el optimo en Mochila 0-1. La programacion dinamica\n";
-    file << "encuentra la combinacion exacta que maximiza el valor dentro de la capacidad.\n";
+    // === ACTIVIDAD 3: Reconstrucción ===
+    archivo << "\n\nACTIVIDAD 3: RECONSTRUCCION DE LA SOLUCION (BACKTRACKING)\n";
+    archivo << "-" << string(55, '-') << "\n\n";
 
-    file << "\n=== Actividad 3: Reconstruccion de la solucion (Backtracking) ===\n";
-    file << "La solucion optima se recupera mediante backtracking sobre la tabla DP:\n";
-    file << "Se comienza en dp[" << items.size() << "][" << W << "] = " << optimalValue << "\n";
-    file << "Se retrocede comprobando si cada item fue incluido.\n";
-    file << "Items recuperados (en orden): ";
-    for (int i = 0; i < (int)selectedIndices.size(); i++)
+    archivo << "Algoritmo: Comienza en dp[" << elementos.size() << "][" << C << "] = " << resultado.valorOptimo << "\n";
+    archivo << "Retrocede verificando si cada elemento fue incluido en la solucion.\n";
+    archivo << "Recupera los indices en orden:\n";
+    for (int i = 0; i < (int)resultado.indicesSeleccionados.size(); i++)
     {
         if (i > 0)
-            file << ", ";
-        file << items[selectedIndices[i]].customerID;
+            archivo << ", ";
+        archivo << "[" << resultado.indicesSeleccionados[i] << "]";
     }
-    file << "\n";
+    archivo << "\n";
 
-    file << "\n=== Actividad 4: Analisis de complejidad ===\n";
-    file << "Complejidad de tiempo: O(n * W) = O(" << items.size() << " * " << W << ")\n";
-    file << "  Llenado de tabla DP: n * W operaciones elementales\n";
-    file << "  Backtracking: O(n)\n";
-    file << "  Complejidad total: Theta(n * W)\n\n";
+    // === ACTIVIDAD 4: Analisis de complejidad ===
+    archivo << "\n\nACTIVIDAD 4: ANALISIS DE COMPLEJIDAD\n";
+    archivo << "-" << string(35, '-') << "\n\n";
 
-    file << "Complejidad de espacio: O(n * W) = O(" << items.size() << " * " << W << ")\n";
-    file << "  Tabla DP: (n+1) x (W+1) celdas\n";
-    file << "  Espacio auxiliar: O(n) para backtracking\n";
-    file << "  Complejidad total: Theta(n * W)\n\n";
+    archivo << "COMPLEJIDAD DE TIEMPO: O(n*W)\n";
+    archivo << "  - Construccion tabla DP: n*W operaciones\n";
+    archivo << "  - Backtracking: O(n)\n";
+    archivo << "  - Total: O(" << elementos.size() << "*" << C << ") = O("
+            << (elementos.size() * C) << ")\n\n";
 
-    file << "Pseudopolinomialidad:\n";
-    file << "  Este algoritmo es PSEUDOPOLINOMIAL, no polinomial estricto.\n";
-    file << "  Razon: W no es el tamano de entrada (que es log W), sino su VALOR.\n";
-    file << "  Si W crece exponencialmente con los datos de entrada, la complejidad\n";
-    file << "  se vuelve exponencial. El algoritmo es polinomial solo si W esta acotado\n";
-    file << "  por un polinomio en log(max_valor).\n";
+    archivo << "COMPLEJIDAD DE ESPACIO: O(n*W)\n";
+    archivo << "  - Tabla DP: (n+1)*(W+1) celdas = " << ((elementos.size() + 1) * (C + 1)) << " celdas\n";
+    archivo << "  - Espacio auxiliar: O(n)\n";
+    archivo << "  - Total: O(" << (elementos.size() * C) << ")\n\n";
 
-    file << "\nTiempo de ejecucion del Modulo C: " << elapsed.count() << " ms\n";
+    archivo << "PSEUDOPOLINOMIALIDAD:\n";
+    archivo << "  Este algoritmo es PSEUDOPOLINOMIAL (no polinomial estricto).\n";
+    archivo << "  Razon: W es el VALOR de capacidad, no su tamano en bits.\n";
+    archivo << "  - Si W esta acotado por polinomio(entrada): Polinomial\n";
+    archivo << "  - Si W crece exponencialmente: Tiempo exponencial real\n";
+    archivo << "  - Ejemplo: W = 2^(numero de solicitudes) -> exponencial\n\n";
 
-    file.close();
+    archivo << "CONCLUSION: O(n*W) es pseudopolinomial. Para NP-hard, es muy eficiente.\n";
 
-    cout << "Archivo creado: results/asignacion_bw.txt\n";
-    cout << "Tiempo de ejecucion: " << elapsed.count() << " ms\n";
+    archivo << "\n\nTiempo de ejecucion: " << fixed << setprecision(3) << duracion.count() << " ms\n";
+    archivo << "===============================================\n";
+
+    archivo.close();
+
+    cout << "\n* Archivo generado: results/asignacion_bw.txt\n";
+    cout << "Tiempo de ejecucion: " << fixed << setprecision(3) << duracion.count() << " ms\n";
 }

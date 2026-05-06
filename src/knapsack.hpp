@@ -4,6 +4,6 @@
 #include <vector>
 #include "request.hpp"
 
-void runModuleC(const std::vector<Request> &sortedRequests);
+void ejecutarModuloC(const std::vector<Solicitud> &solicitudesOrdenadas);
 
 #endif

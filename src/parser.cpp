@@ -3,90 +3,90 @@
 #include <sstream>
 #include <iostream>
 
-static std::vector<std::string> splitCSVLine(const std::string &line)
+static std::vector<std::string> dividirLineaCSV(const std::string &linea)
 {
-    std::vector<std::string> fields;
-    std::string field;
-    bool insideQuotes = false;
+    std::vector<std::string> campos;
+    std::string campo;
+    bool dentroDeComillas = false;
 
-    for (char c : line)
+    for (char c : linea)
     {
         if (c == '"')
         {
-            insideQuotes = !insideQuotes;
+            dentroDeComillas = !dentroDeComillas;
         }
-        else if (c == ',' && !insideQuotes)
+        else if (c == ',' && !dentroDeComillas)
         {
-            fields.push_back(field);
-            field.clear();
+            campos.push_back(campo);
+            campo.clear();
         }
         else
         {
-            field += c;
+            campo += c;
         }
     }
 
-    fields.push_back(field);
-    return fields;
+    campos.push_back(campo);
+    return campos;
 }
 
-static double parseTotalCharges(const std::string &value, int &nullCounter)
+static double analizarCargosTotales(const std::string &valor, int &contadorNulos)
 {
-    if (value.empty() || value == " ")
+    if (valor.empty() || valor == " ")
     {
-        nullCounter++;
+        contadorNulos++;
         return 0.0;
     }
 
     try
     {
-        return std::stod(value);
+        return std::stod(valor);
     }
     catch (...)
     {
-        nullCounter++;
+        contadorNulos++;
         return 0.0;
     }
 }
 
-ParseResult readCSV(const std::string &path)
+ResultadoAnalisis leerCSV(const std::string &ruta)
 {
-    std::ifstream file(path);
+    std::ifstream archivo(ruta);
 
-    ParseResult result;
-    result.nullTotalCharges = 0;
+    ResultadoAnalisis resultado;
+    resultado.cargosTotalesNulos = 0;
 
-    if (!file.is_open())
+    if (!archivo.is_open())
     {
-        std::cerr << "No se pudo abrir el archivo: " << path << std::endl;
-        return result;
+        std::cerr << "No se pudo abrir el archivo: " << ruta << std::endl;
+        return resultado;
     }
 
-    std::string line;
+    std::string linea;
 
-    getline(file, line);
+    getline(archivo, linea);
 
-    while (getline(file, line))
+    while (getline(archivo, linea))
     {
-        std::vector<std::string> fields = splitCSVLine(line);
+        std::vector<std::string> campos = dividirLineaCSV(linea);
 
-        if (fields.size() < 21)
+        if (campos.size() < 21)
         {
             continue;
         }
 
-        Request request;
+        Solicitud solicitud;
 
-        request.customerID = fields[0];
-        request.tenure = std::stoi(fields[5]);
-        request.monthlyCharges = std::stod(fields[18]);
-        request.totalCharges = parseTotalCharges(fields[19], result.nullTotalCharges);
-        request.churn = fields[20];
+        solicitud.idCliente = campos[0];
+        solicitud.antigüedad = std::stoi(campos[5]);
+        solicitud.cargosMenuales = std::stod(campos[18]);
+        solicitud.cargosTotales = analizarCargosTotales(campos[19], resultado.cargosTotalesNulos);
+        solicitud.rotacion = campos[20];
 
-        result.requests.push_back(request);
+        resultado.solicitudes.push_back(solicitud);
     }
 
-    file.close();
+    archivo.close();
 
-    return result;
+    return resultado;
 }

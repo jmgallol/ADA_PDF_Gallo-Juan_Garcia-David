@@ -3,13 +3,13 @@
 
 #include <string>
 
-struct Request
+struct Solicitud
 {
-    std::string customerID;
-    int tenure;
-    double monthlyCharges;
-    double totalCharges;
-    std::string churn;
+    std::string idCliente;
+    int antigüedad;
+    double cargosMenuales;
+    double cargosTotales;
+    std::string rotacion;
 };
 
 #endif

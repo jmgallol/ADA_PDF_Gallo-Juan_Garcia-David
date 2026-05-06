@@ -5,12 +5,12 @@
 #include <vector>
 #include "request.hpp"
 
-struct ParseResult
+struct ResultadoAnalisis
 {
-    std::vector<Request> requests;
-    int nullTotalCharges;
+    std::vector<Solicitud> solicitudes;
+    int cargosTotalesNulos;
 };
 
-ParseResult readCSV(const std::string &path);
+ResultadoAnalisis leerCSV(const std::string &ruta);
 
 #endif
