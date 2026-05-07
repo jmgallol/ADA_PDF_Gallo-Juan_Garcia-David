@@ -8,7 +8,7 @@
 
 ---
 
-## 📋 Descripción del Proyecto
+## Descripción del Proyecto
 
 Este proyecto implementa un pipeline completo para optimizar la infraestructura de telecomunicaciones aplicando tres paradigmas fundamentales de algoritmos:
 
@@ -20,7 +20,7 @@ El proyecto utiliza el dataset **Telecom Customer Churn** de Kaggle (7,043 clien
 
 ---
 
-## 🚀 Compilación
+## Compilación
 
 ```bash
 # Compilar todos los módulos
@@ -33,7 +33,7 @@ g++ -std=c++17 -O2 -o ada_pf src/*.cpp
 
 ---
 
-## ▶️ Ejecución
+## Ejecución
 
 ```bash
 # Ejecutar el programa completo
@@ -52,7 +52,7 @@ El programa genera automáticamente 4 archivos en `results/`:
 
 ---
 
-## 📁 Estructura del Repositorio
+## Estructura del Repositorio
 
 ```
 ADA_Practica_Final/
@@ -78,7 +78,7 @@ ADA_Practica_Final/
 
 ---
 
-## 📊 Módulos Implementados
+## Módulos Implementados
 
 ### Módulo A: Divide y Vencerás
 
@@ -135,7 +135,7 @@ ADA_Practica_Final/
 
 ---
 
-## 🧮 Análisis de Complejidad
+## Análisis de Complejidad
 
 | Módulo | Algoritmo | Tiempo | Espacio | Garantía |
 |--------|-----------|--------|---------|----------|
@@ -146,7 +146,7 @@ ADA_Practica_Final/
 
 ---
 
-## 📈 Resultados Observados
+## Resultados Observados
 
 **Módulo A:**
 - Registros cargados: 7,043
@@ -167,7 +167,7 @@ ADA_Practica_Final/
 
 ---
 
-## 📄 Informe Técnico
+## Informe Técnico
 
 El archivo `report/Informe.pdf` contiene un análisis técnico completo de máximo 10 páginas con:
 
@@ -184,7 +184,7 @@ El archivo `report/Informe.pdf` contiene un análisis técnico completo de máxi
 
 ---
 
-## 🔧 Solución de Problemas
+## Solución de Problemas
 
 ### El programa se ejecuta pero no genera archivos en results/
 
@@ -219,7 +219,7 @@ g++ -std=c++17 -O2 -o ada_pf src/main.cpp src/*.cpp
 
 ---
 
-## 🎯 Verificación Manual
+## Verificación Manual
 
 Para verificar que todo funciona correctamente:
 
@@ -240,7 +240,7 @@ Para verificar que todo funciona correctamente:
 
 ---
 
-## 📚 Referencias
+## Referencias
 
 - **Dataset:** Kaggle - Telecom Customer Churn (CC0 License)
   - https://www.kaggle.com/datasets/blastchar/telco-customer-churn
@@ -252,7 +252,7 @@ Para verificar que todo funciona correctamente:
 
 ---
 
-## 👥 Integrantes del Equipo
+## Integrantes del Equipo
 
 | Rol | Contribución |
 |-----|--------------|
@@ -267,4 +267,4 @@ Para verificar que todo funciona correctamente:
 
 **Generado:** Mayo 2026  
 **Versión:** 1.0  
-**Estado:** Completo y verificado ✅
+**Estado:** Completo y verificado 
