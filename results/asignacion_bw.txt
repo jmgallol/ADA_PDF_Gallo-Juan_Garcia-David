@@ -11,11 +11,30 @@ Parametros:
   Dimensiones tabla DP: (51) x (501)
 
 Solucion optima:
-  Valor optimo total: 0 centavos
-  Numero de solicitudes: 0
-  Ancho de banda utilizado: 0 / 500
+  Valor optimo total: 9611 centavos
+  Numero de solicitudes: 19
+  Ancho de banda utilizado: 500 / 500
 
 IDs de cliente seleccionados:
+  - 7310-EGVHZ (peso=20, valor=202, ratio=10.10)
+  - 3413-BMNZE (peso=45, valor=453, ratio=10.07)
+  - 2273-QCKXA (peso=49, valor=491, ratio=10.02)
+  - 6380-ARCEH (peso=20, valor=202, ratio=10.10)
+  - 3679-XASPY (peso=19, valor=195, ratio=10.26)
+  - 6582-OIVSP (peso=45, valor=453, ratio=10.07)
+  - 4195-NZGTA (peso=25, valor=253, ratio=10.12)
+  - 6469-MRVET (peso=20, valor=202, ratio=10.10)
+  - 2080-SRCDE (peso=25, valor=254, ratio=10.16)
+  - 8203-XJZRC (peso=20, valor=203, ratio=10.15)
+  - 1098-TDVUQ (peso=19, valor=193, ratio=10.16)
+  - 7302-ZHMHP (peso=19, valor=192, ratio=10.11)
+  - 6158-HDPXZ (peso=25, valor=254, ratio=10.16)
+  - 6579-JPICP (peso=20, valor=204, ratio=10.20)
+  - 3716-UVSPD (peso=49, valor=493, ratio=10.06)
+  - 3030-ZKIWL (peso=20, valor=201, ratio=10.05)
+  - 8262-COGGB (peso=20, valor=205, ratio=10.25)
+  - 3807-XHCJH (peso=20, valor=200, ratio=10.00)
+  - 4661-NJEUX (peso=20, valor=201, ratio=10.05)
 
 
 ACTIVIDAD 2: FALLO DEL ENFOQUE CODICIOSO
@@ -24,15 +43,15 @@ ACTIVIDAD 2: FALLO DEL ENFOQUE CODICIOSO
 Contraejemplo con 3 solicitudes:
 
 Elementos considerados:
-  Elemento 1: 5248-YGIJN (peso=6369, valor=903, ratio=0.14)
-  Elemento 2: 6234-RAAPL (peso=7252, valor=999, ratio=0.14)
-  Elemento 3: 5954-BDFSG (peso=7854, valor=1075, ratio=0.14)
+  Elemento 1: 4472-LVYGI (peso=0, valor=526, ratio=0.00)
+  Elemento 2: 3115-CZMZD (peso=0, valor=203, ratio=0.00)
+  Elemento 3: 5709-LVOEQ (peso=0, valor=809, ratio=0.00)
 
 TABLA COMPARATIVA:
 Enfoque        | Solicitudes | Valor | Optimo?
 ---------------------------------------------------
-Codicioso      | (ninguna) | 0 | Si
-DP (Mochila)   | (ninguna) | 0 | Si
+Codicioso      | 4472-LVYGI 3115-CZMZD 5709-LVOEQ  | 1538 | Si
+DP (Mochila)   | 4472-LVYGI 3115-CZMZD 5709-LVOEQ  | 1538 | Si
 
 Nota: Con estos 3 elementos, ambos enfoques dan el mismo resultado.
 Para un contraejemplo clásico teórico:
@@ -43,10 +62,10 @@ Para un contraejemplo clásico teórico:
 ACTIVIDAD 3: RECONSTRUCCION DE LA SOLUCION (BACKTRACKING)
 --------------------------------------------------------
 
-Algoritmo: Comienza en dp[50][500] = 0
+Algoritmo: Comienza en dp[50][500] = 9611
 Retrocede verificando si cada elemento fue incluido en la solucion.
 Recupera los indices en orden:
-
+[12], [13], [14], [16], [17], [19], [21], [22], [23], [24], [25], [28], [29], [33], [37], [40], [43], [46], [47]
 
 
 ACTIVIDAD 4: ANALISIS DE COMPLEJIDAD
@@ -72,5 +91,5 @@ PSEUDOPOLINOMIALIDAD:
 CONCLUSION: O(n*W) es pseudopolinomial. Para NP-hard, es muy eficiente.
 
 
-Tiempo de ejecucion: 0.848 ms
+Tiempo de ejecucion: 0.432 ms
 ===============================================

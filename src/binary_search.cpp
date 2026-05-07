@@ -1,21 +1,26 @@
 #include "binary_search.hpp"
 
-static int buscarRecursivo(const std::vector<Solicitud> &solicitudes, int izquierda, int derecha, int k, int respuesta)
+static int buscarRecursivo(const std::vector<Solicitud> &solicitudes, int izquierda, int derecha, int k)
 {
     if (izquierda > derecha)
     {
-        return respuesta;
+        return -1; // No encontrado
     }
 
     int medio = izquierda + (derecha - izquierda) / 2;
 
-    if (solicitudes[medio].antigüedad >= k)
+    if (solicitudes[medio].antigüedad == k)
     {
-        respuesta = medio;
-        return buscarRecursivo(solicitudes, izquierda, medio - 1, k, respuesta);
+        return medio; // Encontrado exactamente
     }
-
-    return buscarRecursivo(solicitudes, izquierda, medio - 1, k, respuesta);
+    else if (solicitudes[medio].antigüedad > k)
+    {
+        return buscarRecursivo(solicitudes, izquierda, medio - 1, k);
+    }
+    else
+    {
+        return buscarRecursivo(solicitudes, medio + 1, derecha, k);
+    }
 }
 
 int buscarPorAntigüedad(const std::vector<Solicitud> &solicitudes, int k)
@@ -25,5 +30,5 @@ int buscarPorAntigüedad(const std::vector<Solicitud> &solicitudes, int k)
         return -1;
     }
 
-    return buscarRecursivo(solicitudes, 0, solicitudes.size() - 1, k, -1);
+    return buscarRecursivo(solicitudes, 0, solicitudes.size() - 1, k);
 }

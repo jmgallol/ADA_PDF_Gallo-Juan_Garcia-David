@@ -24,7 +24,7 @@ static void fusionar(std::vector<Solicitud> &arr, int izquierda, int medio, int 
 
     while (i < n1 && j < n2)
     {
-        if (arrayIzquierdo[i].antigüedad >= arrayDerecho[j].antigüedad)
+        if (arrayIzquierdo[i].antigüedad <= arrayDerecho[j].antigüedad)
         {
             arr[k] = arrayIzquierdo[i];
             i++;
